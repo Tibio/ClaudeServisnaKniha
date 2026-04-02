@@ -136,11 +136,15 @@ public class HlavnyFormular : Form
         var btnUpravit = VytvorBtn("✎ Upraviť", Color.FromArgb(0, 123, 255));
         var btnVymaz = VytvorBtn("✕ Vymazať", Color.FromArgb(220, 53, 69));
         var btnObnovit = VytvorBtn("↺ Obnoviť", Color.FromArgb(108, 117, 125));
+        var btnExportAuta = VytvorBtn("⬇ Export CSV", Color.FromArgb(23, 162, 184));
+        var btnTlacAuta = VytvorBtn("🖨 Tlačiť", Color.FromArgb(102, 16, 242));
         btnPridat.Click += BtnPridatAuto_Click;
         btnUpravit.Click += BtnUpravitAuto_Click;
         btnVymaz.Click += BtnVymazAuto_Click;
         btnObnovit.Click += (s, e) => NacitajAuta();
-        toolbar.Controls.AddRange([btnPridat, btnUpravit, btnVymaz, btnObnovit]);
+        btnExportAuta.Click += (s, e) => ExportHelper.ExportujCSV(dgvAuta, "vozidla");
+        btnTlacAuta.Click += (s, e) => ExportHelper.TlacTabuľku(dgvAuta, "Zoznam vozidiel");
+        toolbar.Controls.AddRange([btnPridat, btnUpravit, btnVymaz, btnObnovit, btnExportAuta, btnTlacAuta]);
 
         dgvAuta = VytvorGrid();
         dgvAuta.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
@@ -250,10 +254,14 @@ public class HlavnyFormular : Form
         var btnPridat = VytvorBtn("+ Nový záznam", Color.FromArgb(40, 167, 69));
         var btnUpravit = VytvorBtn("✎ Upraviť", Color.FromArgb(0, 123, 255));
         var btnVymaz = VytvorBtn("✕ Vymazať", Color.FromArgb(220, 53, 69));
+        var btnExportServis = VytvorBtn("⬇ Export CSV", Color.FromArgb(23, 162, 184));
+        var btnTlacServis = VytvorBtn("🖨 Tlačiť", Color.FromArgb(102, 16, 242));
         btnPridat.Click += BtnPridatServis_Click;
         btnUpravit.Click += BtnUpravitServis_Click;
         btnVymaz.Click += BtnVymazServis_Click;
-        toolbar.Controls.AddRange([lblFilter, cboFilterServis, btnPridat, btnUpravit, btnVymaz]);
+        btnExportServis.Click += (s, e) => ExportHelper.ExportujCSV(dgvServis, "servisne_zaznamy");
+        btnTlacServis.Click += (s, e) => ExportHelper.TlacTabuľku(dgvServis, "Servisné záznamy");
+        toolbar.Controls.AddRange([lblFilter, cboFilterServis, btnPridat, btnUpravit, btnVymaz, btnExportServis, btnTlacServis]);
 
         dgvServis = VytvorGrid();
         dgvServis.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
@@ -337,10 +345,14 @@ public class HlavnyFormular : Form
         var btnPridat = VytvorBtn("+ Pridať diel", Color.FromArgb(40, 167, 69));
         var btnUpravit = VytvorBtn("✎ Upraviť", Color.FromArgb(0, 123, 255));
         var btnVymaz = VytvorBtn("✕ Vymazať", Color.FromArgb(220, 53, 69));
+        var btnExportDiely = VytvorBtn("⬇ Export CSV", Color.FromArgb(23, 162, 184));
+        var btnTlacDiely = VytvorBtn("🖨 Tlačiť", Color.FromArgb(102, 16, 242));
         btnPridat.Click += BtnPridatDiel_Click;
         btnUpravit.Click += BtnUpravitDiel_Click;
         btnVymaz.Click += BtnVymazDiel_Click;
-        toolbar.Controls.AddRange([lblFilter, cboFilterDiely, btnPridat, btnUpravit, btnVymaz]);
+        btnExportDiely.Click += (s, e) => ExportHelper.ExportujCSV(dgvDiely, "oem_diely");
+        btnTlacDiely.Click += (s, e) => ExportHelper.TlacTabuľku(dgvDiely, "OEM diely");
+        toolbar.Controls.AddRange([lblFilter, cboFilterDiely, btnPridat, btnUpravit, btnVymaz, btnExportDiely, btnTlacDiely]);
 
         dgvDiely = VytvorGrid();
         dgvDiely.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
@@ -412,10 +424,14 @@ public class HlavnyFormular : Form
         var btnPridat = VytvorBtn("+ Pridať náklad", Color.FromArgb(40, 167, 69));
         var btnUpravit = VytvorBtn("✎ Upraviť", Color.FromArgb(0, 123, 255));
         var btnVymaz = VytvorBtn("✕ Vymazať", Color.FromArgb(220, 53, 69));
+        var btnExportNaklady = VytvorBtn("⬇ Export CSV", Color.FromArgb(23, 162, 184));
+        var btnTlacNaklady = VytvorBtn("🖨 Tlačiť", Color.FromArgb(102, 16, 242));
         btnPridat.Click += BtnPridatNaklad_Click;
         btnUpravit.Click += BtnUpravitNaklad_Click;
         btnVymaz.Click += BtnVymazNaklad_Click;
-        toolbar.Controls.AddRange([lblFilter, cboFilterNaklady, btnPridat, btnUpravit, btnVymaz]);
+        btnExportNaklady.Click += (s, e) => ExportHelper.ExportujCSV(dgvNaklady, "naklady");
+        btnTlacNaklady.Click += (s, e) => ExportHelper.TlacTabuľku(dgvNaklady, "Náklady");
+        toolbar.Controls.AddRange([lblFilter, cboFilterNaklady, btnPridat, btnUpravit, btnVymaz, btnExportNaklady, btnTlacNaklady]);
 
         dgvNaklady = VytvorGrid();
         dgvNaklady.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
@@ -501,11 +517,15 @@ public class HlavnyFormular : Form
         var btnUpravit = VytvorBtn("✎ Upraviť", Color.FromArgb(0, 123, 255));
         var btnVykonany = VytvorBtn("✔ Vykonané", Color.FromArgb(23, 162, 184));
         var btnVymaz = VytvorBtn("✕ Vymazať", Color.FromArgb(220, 53, 69));
+        var btnExportTerminy = VytvorBtn("⬇ Export CSV", Color.FromArgb(23, 162, 184));
+        var btnTlacTerminy = VytvorBtn("🖨 Tlačiť", Color.FromArgb(102, 16, 242));
         btnPridat.Click += BtnPridatTermin_Click;
         btnUpravit.Click += BtnUpravitTermin_Click;
         btnVykonany.Click += BtnVykonanyTermin_Click;
         btnVymaz.Click += BtnVymazTermin_Click;
-        toolbar.Controls.AddRange([lblFilter, cboFilterTerminy, btnPridat, btnUpravit, btnVykonany, btnVymaz]);
+        btnExportTerminy.Click += (s, e) => ExportHelper.ExportujCSV(dgvTerminy, "terminy_servisu");
+        btnTlacTerminy.Click += (s, e) => ExportHelper.TlacTabuľku(dgvTerminy, "Termíny servisu");
+        toolbar.Controls.AddRange([lblFilter, cboFilterTerminy, btnPridat, btnUpravit, btnVykonany, btnVymaz, btnExportTerminy, btnTlacTerminy]);
 
         dgvTerminy = VytvorGrid();
         dgvTerminy.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });

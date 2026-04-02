@@ -10,7 +10,7 @@ public class AutoDialog : Form
     private readonly bool _jeNovy;
 
     private TextBox txtSPZ = null!;
-    private TextBox txtZnacka = null!;
+    private ComboBox cboZnacka = null!;
     private TextBox txtModel = null!;
     private NumericUpDown numRok = null!;
     private TextBox txtVIN = null!;
@@ -57,7 +57,12 @@ public class AutoDialog : Form
 
         int row = 0;
         txtSPZ = AddRow(panel, "ŠPZ:", row++);
-        txtZnacka = AddRow(panel, "Značka:", row++);
+
+        panel.Controls.Add(CreateLabel("Značka:"), 0, row);
+        cboZnacka = new ComboBox { Dock = DockStyle.Fill, DropDownStyle = ComboBoxStyle.DropDown, AutoCompleteMode = AutoCompleteMode.SuggestAppend, AutoCompleteSource = AutoCompleteSource.ListItems };
+        cboZnacka.Items.AddRange(ZnackyAut.Zoznam);
+        panel.Controls.Add(cboZnacka, 1, row++);
+
         txtModel = AddRow(panel, "Model:", row++);
         numRok = AddNumRow(panel, "Rok výroby:", row++, 1900, DateTime.Now.Year, DateTime.Now.Year);
         txtVIN = AddRow(panel, "VIN:", row++);
@@ -147,7 +152,7 @@ public class AutoDialog : Form
     private void NaplnFormular()
     {
         txtSPZ.Text = _auto.SPZ;
-        txtZnacka.Text = _auto.Znacka;
+        cboZnacka.Text = _auto.Znacka;
         txtModel.Text = _auto.Model;
         numRok.Value = _auto.RokVyroby == 0 ? DateTime.Now.Year : _auto.RokVyroby;
         txtVIN.Text = _auto.VIN;
@@ -166,13 +171,13 @@ public class AutoDialog : Form
     {
         if (string.IsNullOrWhiteSpace(txtSPZ.Text))
         { MessageBox.Show("Zadajte ŠPZ vozidla.", "Chyba", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-        if (string.IsNullOrWhiteSpace(txtZnacka.Text))
+        if (string.IsNullOrWhiteSpace(cboZnacka.Text))
         { MessageBox.Show("Zadajte značku vozidla.", "Chyba", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
         if (string.IsNullOrWhiteSpace(txtModel.Text))
         { MessageBox.Show("Zadajte model vozidla.", "Chyba", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
 
         _auto.SPZ = txtSPZ.Text.Trim().ToUpper();
-        _auto.Znacka = txtZnacka.Text.Trim();
+        _auto.Znacka = cboZnacka.Text.Trim();
         _auto.Model = txtModel.Text.Trim();
         _auto.RokVyroby = (int)numRok.Value;
         _auto.VIN = txtVIN.Text.Trim().ToUpper();
