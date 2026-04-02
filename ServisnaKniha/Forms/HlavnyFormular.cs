@@ -18,7 +18,12 @@ public class HlavnyFormular : Form
     private TabPage tabNaklady = null!;
     private TabPage tabTerminy = null!;
     private TabPage tabKM = null!;
+    private TabPage tabOlej = null!;
     private TabPage tabZaloha = null!;
+
+    // Olej
+    private DataGridView dgvOlej = null!;
+    private ComboBox cboFilterOlej = null!;
 
     // Autá
     private DataGridView dgvAuta = null!;
@@ -98,9 +103,10 @@ public class HlavnyFormular : Form
         tabNaklady = new TabPage("  Náklady");
         tabTerminy = new TabPage("  Termíny servisu");
         tabKM = new TabPage("  Sledovanie km");
+        tabOlej = new TabPage("  Výmena oleja");
         tabZaloha = new TabPage("  Záloha / Google Drive");
 
-        tabMain.TabPages.AddRange([tabAuta, tabServis, tabDiely, tabNaklady, tabTerminy, tabKM, tabZaloha]);
+        tabMain.TabPages.AddRange([tabAuta, tabServis, tabDiely, tabNaklady, tabTerminy, tabKM, tabOlej, tabZaloha]);
 
         BudujTabAuta();
         BudujTabServis();
@@ -108,6 +114,7 @@ public class HlavnyFormular : Form
         BudujTabNaklady();
         BudujTabTerminy();
         BudujTabKM();
+        BudujTabOlej();
         BudujTabZaloha();
 
         Controls.Add(tabMain);
@@ -229,6 +236,7 @@ public class HlavnyFormular : Form
         AktualizujFilter(cboFilterDiely, auta);
         AktualizujFilter(cboFilterNaklady, auta);
         AktualizujFilter(cboFilterTerminy, auta);
+        AktualizujFilter(cboFilterOlej, auta);
         pnlKM.NacitajAuta();
     }
 
@@ -635,6 +643,173 @@ public class HlavnyFormular : Form
         tabKM.Controls.Add(pnlKM);
     }
 
+    // ==================== TAB VÝMENA OLEJA ====================
+
+    private void BudujTabOlej()
+    {
+        var pnl = new Panel { Dock = DockStyle.Fill };
+        var toolbar = VytvorToolbar();
+
+        var lblFilter = new Label { Text = "Vozidlo:", AutoSize = true, Margin = new Padding(5, 8, 2, 0) };
+        cboFilterOlej = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 230, Margin = new Padding(0, 5, 10, 0) };
+        cboFilterOlej.SelectedIndexChanged += (s, e) => NacitajOlejZaznamy();
+
+        var btnPridat = VytvorBtn("+ Nová výmena", Color.FromArgb(40, 167, 69));
+        var btnUpravit = VytvorBtn("✎ Upraviť", Color.FromArgb(0, 123, 255));
+        var btnVymaz = VytvorBtn("✕ Vymazať", Color.FromArgb(220, 53, 69));
+        var btnNastavenia = VytvorBtn("⚙ Interval", Color.FromArgb(102, 16, 242));
+        var btnExport = VytvorBtn("⬇ Export CSV", Color.FromArgb(23, 162, 184));
+        var btnTlac = VytvorBtn("🖨 Tlačiť", Color.FromArgb(108, 117, 125));
+        btnPridat.Click += BtnPridatOlej_Click;
+        btnUpravit.Click += BtnUpravitOlej_Click;
+        btnVymaz.Click += BtnVymazOlej_Click;
+        btnNastavenia.Click += BtnOlejNastavenia_Click;
+        btnExport.Click += (s, e) => ExportHelper.ExportujCSV(dgvOlej, "vymena_oleja");
+        btnTlac.Click += (s, e) => ExportHelper.TlacTabuľku(dgvOlej, "Výmena oleja");
+        toolbar.Controls.AddRange([lblFilter, cboFilterOlej, btnPridat, btnUpravit, btnVymaz, btnNastavenia, btnExport, btnTlac]);
+
+        // Stavový panel — ďalšia výmena
+        var pnlStav = new Panel { Dock = DockStyle.Top, Height = 38, BackColor = Color.FromArgb(235, 245, 235) };
+        var lblStav = new Label
+        {
+            Name = "lblOlejStav",
+            Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft,
+            Padding = new Padding(12, 0, 0, 0),
+            Font = new Font("Segoe UI", 9.5f)
+        };
+        pnlStav.Controls.Add(lblStav);
+
+        dgvOlej = VytvorGrid();
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "Datum", HeaderText = "Dátum výmeny", FillWeight = 12 });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "Auto", HeaderText = "Vozidlo", FillWeight = 18 });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "KM", HeaderText = "Km", FillWeight = 10, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleRight } });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "Znacka", HeaderText = "Značka oleja", FillWeight = 13 });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "Visc", HeaderText = "Viskozita", FillWeight = 9 });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "Objem", HeaderText = "Objem (l)", FillWeight = 8, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleRight } });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "Filter", HeaderText = "Filter", FillWeight = 12 });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "CenaOlej", HeaderText = "Olej (€)", FillWeight = 9, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleRight } });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "CenaVym", HeaderText = "Výmena (€)", FillWeight = 9, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleRight } });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "Celkova", HeaderText = "Spolu (€)", FillWeight = 9, DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleRight, Font = new Font("Segoe UI", 9f, FontStyle.Bold) } });
+        dgvOlej.Columns.Add(new DataGridViewTextBoxColumn { Name = "Servis", HeaderText = "Servis", FillWeight = 13 });
+        dgvOlej.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0) BtnUpravitOlej_Click(s, e); };
+        dgvOlej.SelectionChanged += (s, e) => AktualizujOlejStav();
+
+        pnl.Controls.Add(dgvOlej);
+        pnl.Controls.Add(pnlStav);
+        pnl.Controls.Add(toolbar);
+        tabOlej.Controls.Add(pnl);
+    }
+
+    private void BtnPridatOlej_Click(object? sender, EventArgs e)
+    {
+        using var dlg = new OlejDialog(_db.GetVsetkyAuta(), predvyberAutoId: GetFilterAutoId(cboFilterOlej));
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+        {
+            dlg.Vysledok.DatumPridania = DateTime.Now;
+            _db.PridajOlejZaznam(dlg.Vysledok);
+            NacitajOlejZaznamy();
+            NacitajAuta();
+        }
+    }
+
+    private void BtnUpravitOlej_Click(object? sender, EventArgs e)
+    {
+        if (dgvOlej.SelectedRows.Count == 0) return;
+        int id = (int)dgvOlej.SelectedRows[0].Cells["Id"].Value;
+        var zaznam = _db.GetOlejZaznamy().FirstOrDefault(z => z.Id == id);
+        if (zaznam == null) return;
+        using var dlg = new OlejDialog(_db.GetVsetkyAuta(), zaznam);
+        if (dlg.ShowDialog(this) == DialogResult.OK) { _db.AktualizujOlejZaznam(dlg.Vysledok); NacitajOlejZaznamy(); }
+    }
+
+    private void BtnVymazOlej_Click(object? sender, EventArgs e)
+    {
+        if (dgvOlej.SelectedRows.Count == 0) return;
+        if (MessageBox.Show("Naozaj vymazať tento záznam výmeny oleja?", "Potvrdenie",
+            MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+        {
+            _db.VymazOlejZaznam((int)dgvOlej.SelectedRows[0].Cells["Id"].Value);
+            NacitajOlejZaznamy();
+        }
+    }
+
+    private void BtnOlejNastavenia_Click(object? sender, EventArgs e)
+    {
+        var filterAutoId = GetFilterAutoId(cboFilterOlej);
+        if (filterAutoId == null)
+        {
+            MessageBox.Show("Vyberte konkrétne vozidlo vo filtri pre nastavenie intervalu.",
+                "Vyberte vozidlo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+        var auto = _db.GetAuto(filterAutoId.Value);
+        var nastavenia = _db.GetOlejNastavenia(filterAutoId.Value);
+        using var dlg = new OlejNastaveniaDialog(nastavenia, auto?.ToString() ?? "");
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+        {
+            _db.UlozOlejNastavenia(dlg.Vysledok);
+            AktualizujOlejStav();
+        }
+    }
+
+    private void NacitajOlejZaznamy()
+    {
+        var zaznamy = _db.GetOlejZaznamy(GetFilterAutoId(cboFilterOlej));
+        dgvOlej.Rows.Clear();
+        foreach (var z in zaznamy)
+            dgvOlej.Rows.Add(z.Id, z.DatumVymeny.ToString("dd.MM.yyyy"), z.AutoNazov,
+                $"{z.StavKM:N0}", z.ZnackaOleja, z.ViskozitaOleja,
+                $"{z.ObjemOleja:N1}", z.FilterOleja,
+                $"{z.CenaOleja:N2}", $"{z.CenaVymeny:N2}", $"{z.CenaCelkom:N2}", z.Servis);
+        AktualizujOlejStav();
+    }
+
+    private void AktualizujOlejStav()
+    {
+        var lblStav = tabOlej.Controls.Find("lblOlejStav", true).FirstOrDefault() as Label;
+        if (lblStav == null) return;
+
+        var filterAutoId = GetFilterAutoId(cboFilterOlej);
+        if (filterAutoId == null) { lblStav.Text = "Vyberte vozidlo vo filtri pre zobrazenie stavu výmeny oleja."; lblStav.BackColor = Color.FromArgb(235, 245, 235); return; }
+
+        var auto = _db.GetAuto(filterAutoId.Value);
+        var posledna = _db.GetPoslednyOlejZaznam(filterAutoId.Value);
+        var nastavenia = _db.GetOlejNastavenia(filterAutoId.Value);
+
+        if (posledna == null) { lblStav.Text = "Žiadna výmena oleja zatiaľ nezaznamenávaná."; lblStav.BackColor = Color.FromArgb(255, 243, 205); return; }
+
+        var parts = new List<string>
+        {
+            $"Posledná výmena: {posledna.DatumVymeny:dd.MM.yyyy}  |  {posledna.ZnackaOleja} {posledna.ViskozitaOleja}  |  km: {posledna.StavKM:N0}"
+        };
+
+        bool prekorocene = false, blizko = false;
+        if (nastavenia.IntervalKM.HasValue && auto != null)
+        {
+            int nasledKM = posledna.StavKM + nastavenia.IntervalKM.Value;
+            int zostatok = nasledKM - auto.AktualneKM;
+            parts.Add($"Ďalšia km výmena: {nasledKM:N0} km  (zostatok: {zostatok:+#,0;-#,0;0} km)");
+            if (zostatok <= 0) prekorocene = true;
+            else if (zostatok <= 1000) blizko = true;
+        }
+        if (nastavenia.IntervalMesiace.HasValue)
+        {
+            var nasledDatum = posledna.DatumVymeny.AddMonths(nastavenia.IntervalMesiace.Value);
+            int zostatokDni = (nasledDatum - DateTime.Today).Days;
+            parts.Add($"Ďalšia dátumová výmena: {nasledDatum:dd.MM.yyyy}  (zostatok: {zostatokDni:+#,0;-#,0;0} dní)");
+            if (zostatokDni <= 0) prekorocene = true;
+            else if (zostatokDni <= 30) blizko = true;
+        }
+        if (!nastavenia.IntervalKM.HasValue && !nastavenia.IntervalMesiace.HasValue)
+            parts.Add("Interval nie je nastavený. Použite tlačidlo ⚙ Interval.");
+
+        lblStav.Text = string.Join("   ·   ", parts);
+        lblStav.BackColor = prekorocene ? Color.FromArgb(255, 220, 220) :
+                            blizko ? Color.FromArgb(255, 243, 205) :
+                            Color.FromArgb(212, 237, 218);
+    }
+
     // ==================== TAB ZÁLOHA ====================
 
     private void BudujTabZaloha()
@@ -653,6 +828,7 @@ public class HlavnyFormular : Form
             case var _ when tabMain.SelectedTab == tabDiely: NacitajDiely(); break;
             case var _ when tabMain.SelectedTab == tabNaklady: NacitajNaklady(); break;
             case var _ when tabMain.SelectedTab == tabTerminy: NacitajTerminy(); break;
+            case var _ when tabMain.SelectedTab == tabOlej: NacitajOlejZaznamy(); break;
         }
     }
 
@@ -663,6 +839,7 @@ public class HlavnyFormular : Form
         NacitajDiely();
         NacitajNaklady();
         NacitajTerminy();
+        NacitajOlejZaznamy();
     }
 
     private static FlowLayoutPanel VytvorToolbar() => new()

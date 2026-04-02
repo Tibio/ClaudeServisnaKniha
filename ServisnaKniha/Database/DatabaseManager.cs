@@ -114,6 +114,31 @@ public class DatabaseManager
                 Poznamka TEXT,
                 FOREIGN KEY (AutoId) REFERENCES Auto(Id) ON DELETE CASCADE
             );
+
+            CREATE TABLE IF NOT EXISTS OlejZaznam (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                AutoId INTEGER NOT NULL,
+                DatumVymeny TEXT NOT NULL,
+                StavKM INTEGER NOT NULL,
+                ZnackaOleja TEXT,
+                ViskozitaOleja TEXT,
+                ObjemOleja REAL DEFAULT 0,
+                FilterOleja TEXT,
+                CenaOleja REAL DEFAULT 0,
+                CenaVymeny REAL DEFAULT 0,
+                Servis TEXT,
+                Poznamka TEXT,
+                DatumPridania TEXT NOT NULL,
+                FOREIGN KEY (AutoId) REFERENCES Auto(Id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS OlejNastavenia (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                AutoId INTEGER NOT NULL UNIQUE,
+                IntervalKM INTEGER,
+                IntervalMesiace INTEGER,
+                FOREIGN KEY (AutoId) REFERENCES Auto(Id) ON DELETE CASCADE
+            );
         ";
         cmd.ExecuteNonQuery();
     }
@@ -661,6 +686,150 @@ public class DatabaseManager
         cmd.CommandText = "UPDATE Auto SET AktualneKM=MAX(AktualneKM, $km) WHERE Id=$id";
         cmd.Parameters.AddWithValue("$km", km);
         cmd.Parameters.AddWithValue("$id", autoId);
+        cmd.ExecuteNonQuery();
+    }
+
+    // ==================== OLEJ ZAZNAMY ====================
+
+    public List<OlejZaznam> GetOlejZaznamy(int? autoId = null)
+    {
+        var list = new List<OlejZaznam>();
+        using var conn = GetConnection();
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT o.*, a.Znacka || ' ' || a.Model || ' (' || a.SPZ || ')' as AutoNazov
+            FROM OlejZaznam o JOIN Auto a ON o.AutoId=a.Id
+            " + (autoId.HasValue ? "WHERE o.AutoId=$autoId " : "") +
+            "ORDER BY o.DatumVymeny DESC";
+        if (autoId.HasValue) cmd.Parameters.AddWithValue("$autoId", autoId.Value);
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read()) list.Add(MapOlejZaznam(reader));
+        return list;
+    }
+
+    public OlejZaznam? GetPoslednyOlejZaznam(int autoId)
+    {
+        using var conn = GetConnection();
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            SELECT o.*, a.Znacka || ' ' || a.Model || ' (' || a.SPZ || ')' as AutoNazov
+            FROM OlejZaznam o JOIN Auto a ON o.AutoId=a.Id
+            WHERE o.AutoId=$autoId ORDER BY o.DatumVymeny DESC, o.StavKM DESC LIMIT 1";
+        cmd.Parameters.AddWithValue("$autoId", autoId);
+        using var reader = cmd.ExecuteReader();
+        return reader.Read() ? MapOlejZaznam(reader) : null;
+    }
+
+    public int PridajOlejZaznam(OlejZaznam z)
+    {
+        using var conn = GetConnection();
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO OlejZaznam (AutoId, DatumVymeny, StavKM, ZnackaOleja, ViskozitaOleja,
+                ObjemOleja, FilterOleja, CenaOleja, CenaVymeny, Servis, Poznamka, DatumPridania)
+            VALUES ($aid, $datum, $km, $znacka, $visc, $objem, $filter, $cenaol, $cenavym, $servis, $pozn, $pridanie);
+            SELECT last_insert_rowid();";
+        SetOlejParams(cmd, z);
+        var id = Convert.ToInt32(cmd.ExecuteScalar());
+        AktualizujKMAuta(z.AutoId, z.StavKM);
+        return id;
+    }
+
+    public void AktualizujOlejZaznam(OlejZaznam z)
+    {
+        using var conn = GetConnection();
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            UPDATE OlejZaznam SET AutoId=$aid, DatumVymeny=$datum, StavKM=$km,
+            ZnackaOleja=$znacka, ViskozitaOleja=$visc, ObjemOleja=$objem,
+            FilterOleja=$filter, CenaOleja=$cenaol, CenaVymeny=$cenavym,
+            Servis=$servis, Poznamka=$pozn WHERE Id=$id";
+        SetOlejParams(cmd, z);
+        cmd.Parameters.AddWithValue("$id", z.Id);
+        cmd.ExecuteNonQuery();
+    }
+
+    public void VymazOlejZaznam(int id)
+    {
+        using var conn = GetConnection();
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "DELETE FROM OlejZaznam WHERE Id=$id";
+        cmd.Parameters.AddWithValue("$id", id);
+        cmd.ExecuteNonQuery();
+    }
+
+    private static void SetOlejParams(SqliteCommand cmd, OlejZaznam z)
+    {
+        cmd.Parameters.AddWithValue("$aid", z.AutoId);
+        cmd.Parameters.AddWithValue("$datum", z.DatumVymeny.ToString("yyyy-MM-dd"));
+        cmd.Parameters.AddWithValue("$km", z.StavKM);
+        cmd.Parameters.AddWithValue("$znacka", (object?)z.ZnackaOleja ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$visc", (object?)z.ViskozitaOleja ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$objem", z.ObjemOleja);
+        cmd.Parameters.AddWithValue("$filter", (object?)z.FilterOleja ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$cenaol", z.CenaOleja);
+        cmd.Parameters.AddWithValue("$cenavym", z.CenaVymeny);
+        cmd.Parameters.AddWithValue("$servis", (object?)z.Servis ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$pozn", (object?)z.Poznamka ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$pridanie", z.DatumPridania.ToString("yyyy-MM-dd HH:mm:ss"));
+    }
+
+    private static OlejZaznam MapOlejZaznam(SqliteDataReader r) => new()
+    {
+        Id = r.GetInt32(0),
+        AutoId = r.GetInt32(1),
+        DatumVymeny = DateTime.Parse(r.GetString(2)),
+        StavKM = r.GetInt32(3),
+        ZnackaOleja = r.IsDBNull(4) ? "" : r.GetString(4),
+        ViskozitaOleja = r.IsDBNull(5) ? "" : r.GetString(5),
+        ObjemOleja = r.IsDBNull(6) ? 0 : r.GetDouble(6),
+        FilterOleja = r.IsDBNull(7) ? "" : r.GetString(7),
+        CenaOleja = r.IsDBNull(8) ? 0 : (decimal)r.GetDouble(8),
+        CenaVymeny = r.IsDBNull(9) ? 0 : (decimal)r.GetDouble(9),
+        Servis = r.IsDBNull(10) ? "" : r.GetString(10),
+        Poznamka = r.IsDBNull(11) ? "" : r.GetString(11),
+        DatumPridania = DateTime.Parse(r.GetString(12)),
+        AutoNazov = r.GetString(13)
+    };
+
+    // ==================== OLEJ NASTAVENIA ====================
+
+    public OlejNastavenia GetOlejNastavenia(int autoId)
+    {
+        using var conn = GetConnection();
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT * FROM OlejNastavenia WHERE AutoId=$autoId";
+        cmd.Parameters.AddWithValue("$autoId", autoId);
+        using var reader = cmd.ExecuteReader();
+        if (reader.Read())
+            return new OlejNastavenia
+            {
+                Id = reader.GetInt32(0),
+                AutoId = reader.GetInt32(1),
+                IntervalKM = reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                IntervalMesiace = reader.IsDBNull(3) ? null : reader.GetInt32(3)
+            };
+        return new OlejNastavenia { AutoId = autoId };
+    }
+
+    public void UlozOlejNastavenia(OlejNastavenia n)
+    {
+        using var conn = GetConnection();
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO OlejNastavenia (AutoId, IntervalKM, IntervalMesiace)
+            VALUES ($aid, $km, $mes)
+            ON CONFLICT(AutoId) DO UPDATE SET IntervalKM=$km, IntervalMesiace=$mes";
+        cmd.Parameters.AddWithValue("$aid", n.AutoId);
+        cmd.Parameters.AddWithValue("$km", (object?)n.IntervalKM ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$mes", (object?)n.IntervalMesiace ?? DBNull.Value);
         cmd.ExecuteNonQuery();
     }
 }
