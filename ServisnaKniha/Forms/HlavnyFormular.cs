@@ -8,6 +8,7 @@ namespace ServisnaKniha.Forms;
 public class HlavnyFormular : Form
 {
     private readonly DatabaseManager _db;
+    private readonly string _dbPath;
 
     // Tabs
     private TabControl tabMain = null!;
@@ -17,6 +18,7 @@ public class HlavnyFormular : Form
     private TabPage tabNaklady = null!;
     private TabPage tabTerminy = null!;
     private TabPage tabKM = null!;
+    private TabPage tabZaloha = null!;
 
     // Autá
     private DataGridView dgvAuta = null!;
@@ -37,9 +39,10 @@ public class HlavnyFormular : Form
     // Labels nákladov
     private Label lblNakladyCelkom = null!;
 
-    public HlavnyFormular(DatabaseManager db)
+    public HlavnyFormular(DatabaseManager db, string dbPath)
     {
         _db = db;
+        _dbPath = dbPath;
         InitializeComponent();
         NacitajVsetko();
     }
@@ -95,8 +98,9 @@ public class HlavnyFormular : Form
         tabNaklady = new TabPage("  Náklady");
         tabTerminy = new TabPage("  Termíny servisu");
         tabKM = new TabPage("  Sledovanie km");
+        tabZaloha = new TabPage("  Záloha / Google Drive");
 
-        tabMain.TabPages.AddRange([tabAuta, tabServis, tabDiely, tabNaklady, tabTerminy, tabKM]);
+        tabMain.TabPages.AddRange([tabAuta, tabServis, tabDiely, tabNaklady, tabTerminy, tabKM, tabZaloha]);
 
         BudujTabAuta();
         BudujTabServis();
@@ -104,6 +108,7 @@ public class HlavnyFormular : Form
         BudujTabNaklady();
         BudujTabTerminy();
         BudujTabKM();
+        BudujTabZaloha();
 
         Controls.Add(tabMain);
         Controls.Add(pnlHeader);
@@ -628,6 +633,14 @@ public class HlavnyFormular : Form
     {
         pnlKM = new KMSledovaniePanel(_db);
         tabKM.Controls.Add(pnlKM);
+    }
+
+    // ==================== TAB ZÁLOHA ====================
+
+    private void BudujTabZaloha()
+    {
+        var panel = new ZalohaPanel(_dbPath, NacitajVsetko);
+        tabZaloha.Controls.Add(panel);
     }
 
     // ==================== POMOCNÉ METÓDY ====================

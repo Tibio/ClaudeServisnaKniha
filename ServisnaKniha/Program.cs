@@ -21,6 +21,6 @@ static class Program
         var dbPath = Path.Combine(appDataDir, "servisna_kniha.db");
 
         var db = new DatabaseManager(dbPath);
-        Application.Run(new HlavnyFormular(db));
+        Application.Run(new HlavnyFormular(db, dbPath));
     }
 }
