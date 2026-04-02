@@ -49,7 +49,23 @@ public class HlavnyFormular : Form
         _db = db;
         _dbPath = dbPath;
         InitializeComponent();
+        NastavIkonu();
         NacitajVsetko();
+    }
+
+    private void NastavIkonu()
+    {
+        try
+        {
+            var asm = System.Reflection.Assembly.GetExecutingAssembly();
+            var name = asm.GetManifestResourceNames().FirstOrDefault(n => n.EndsWith("app.ico"));
+            if (name != null)
+            {
+                using var stream = asm.GetManifestResourceStream(name);
+                if (stream != null) Icon = new Icon(stream);
+            }
+        }
+        catch { /* ikona nie je kritická */ }
     }
 
     private void InitializeComponent()
