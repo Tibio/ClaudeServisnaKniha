@@ -80,6 +80,7 @@ public static class ExportHelper
         private readonly DataGridView _dgv;
         private readonly string _nadpis;
         private int _currentRow = 0;
+        private int _pageNumber = 0;
         private readonly List<DataGridViewColumn> _cols;
 
         public PrintDocument PrintDocument { get; }
@@ -94,11 +95,12 @@ public static class ExportHelper
             PrintDocument.DefaultPageSettings.Landscape = true;
             PrintDocument.DefaultPageSettings.Margins = new Margins(40, 40, 40, 40);
             PrintDocument.PrintPage += PrintPage;
-            PrintDocument.BeginPrint += (s, e) => _currentRow = 0;
+            PrintDocument.BeginPrint += (s, e) => { _currentRow = 0; _pageNumber = 0; };
         }
 
         private void PrintPage(object sender, PrintPageEventArgs e)
         {
+            _pageNumber++;
             var g = e.Graphics!;
             var bounds = e.MarginBounds;
             float y = bounds.Top;
@@ -168,7 +170,7 @@ public static class ExportHelper
             g.DrawRectangle(Pens.Gray, bounds.Left, bounds.Top + fontNadpis.Height + 8, totalWidth, y - (bounds.Top + fontNadpis.Height + 8));
 
             // Číslo strany
-            var pageStr = $"Strana {e.PageNumber}";
+            var pageStr = $"Strana {_pageNumber}";
             var pageSize = g.MeasureString(pageStr, fontData);
             g.DrawString(pageStr, fontData, brushText, bounds.Right - pageSize.Width, bounds.Bottom + 5);
 

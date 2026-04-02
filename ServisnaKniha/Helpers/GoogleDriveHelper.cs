@@ -1,11 +1,11 @@
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
-using Google.Apis.Drive.v3.Data;
 using Google.Apis.Services;
 using Google.Apis.Upload;
 using Google.Apis.Util.Store;
 using ServisnaKniha.Models;
 using System.Threading;
+using GDriveFile = Google.Apis.Drive.v3.Data.File;
 
 namespace ServisnaKniha.Helpers;
 
@@ -61,14 +61,14 @@ public class GoogleDriveHelper
         var folderId = await ZabezpecFolderAsync(ct);
         var fileName = Path.GetFileName(filePath);
 
-        var meta = new Google.Apis.Drive.v3.Data.File
+        var meta = new GDriveFile
         {
             Name = fileName,
             Parents = [folderId],
             Description = $"Záloha ServisnaKniha — {DateTime.Now:dd.MM.yyyy HH:mm}"
         };
 
-        await using var stream = File.OpenRead(filePath);
+        await using var stream = System.IO.File.OpenRead(filePath);
         var req = _service!.Files.Create(meta, stream, "application/x-sqlite3");
         req.Fields = "id, name, size, createdTime";
 
@@ -104,7 +104,7 @@ public class GoogleDriveHelper
         {
             Id = f.Id,
             Nazov = f.Name,
-            VelkostBytes = f.SizeAsLong ?? 0,
+            VelkostBytes = f.Size ?? 0,
             DatumVytvorenia = f.CreatedTimeDateTimeOffset?.DateTime ?? DateTime.MinValue,
             Popis = f.Description ?? ""
         }).ToList();
@@ -122,7 +122,7 @@ public class GoogleDriveHelper
                 progress?.Report((int)(p.BytesDownloaded * 100 / Math.Max(p.BytesDownloaded, 1)));
         };
 
-        await using var stream = File.Create(destPath);
+        await using var stream = System.IO.File.Create(destPath);
         await req.DownloadAsync(stream, ct);
     }
 
@@ -141,7 +141,7 @@ public class GoogleDriveHelper
         var existujuci = await NajstFolderIdAsync(ct);
         if (existujuci != null) return existujuci;
 
-        var folder = new Google.Apis.Drive.v3.Data.File
+        var folder = new GDriveFile
         {
             Name = _folderName,
             MimeType = "application/vnd.google-apps.folder"
