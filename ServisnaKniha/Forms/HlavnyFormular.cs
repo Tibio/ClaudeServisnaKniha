@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace ServisnaKniha.Forms;
 
-public class HlavnyFormular : Form
+public partial class HlavnyFormular : Form
 {
     private readonly DatabaseManager _db;
     private readonly string _dbPath;

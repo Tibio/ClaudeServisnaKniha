@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace ServisnaKniha.Forms;
 
-public class KMSledovaniePanel : UserControl
+public partial class KMSledovaniePanel : UserControl
 {
     private readonly DatabaseManager _db;
     private Auto? _aktualneAuto;

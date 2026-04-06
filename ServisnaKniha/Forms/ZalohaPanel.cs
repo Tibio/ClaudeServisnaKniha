@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace ServisnaKniha.Forms;
 
-public class ZalohaPanel : UserControl
+public partial class ZalohaPanel : UserControl
 {
     private readonly string _dbPath;
     private readonly Action _onImport;
