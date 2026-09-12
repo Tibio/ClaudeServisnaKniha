@@ -3,25 +3,56 @@
 so only the last 30 lines plus any error-looking lines reach the model context,
 instead of the full raw output."""
 import json
+import re
 import sys
+import shlex
 import base64
 
-NOISY_MARKERS = (
-    "npm install", "npm ci", "npm run build", "npm test", "npm run test",
-    "yarn install", "yarn build", "yarn test",
-    "pnpm install", "pnpm build", "pnpm test",
-    "make ", "cargo build", "cargo test",
-    "go build", "go test",
-    "mvn ", "gradle", "dotnet build", "dotnet test",
-    "pip install",
-)
+SEGMENT_SPLIT = re.compile(r"&&|\|\||[;|]")
+
+# binary -> set of subcommands that make it noisy, or None if any invocation qualifies
+RULES = {
+    "npm": {"install", "ci", "test"},
+    "yarn": {"install", "build", "test"},
+    "pnpm": {"install", "build", "test"},
+    "make": None,
+    "cargo": {"build", "test"},
+    "go": {"build", "test"},
+    "mvn": None,
+    "gradle": None,
+    "./gradlew": None,
+    "dotnet": {"build", "test"},
+    "pip": {"install"},
+    "pip3": {"install"},
+}
+
+
+def is_noisy(command: str) -> bool:
+    for segment in SEGMENT_SPLIT.split(command):
+        try:
+            tokens = shlex.split(segment.strip())
+        except ValueError:
+            continue
+        if not tokens:
+            continue
+        binary = tokens[0].split("/")[-1] if tokens[0] != "./gradlew" else "./gradlew"
+        if binary not in RULES:
+            continue
+        allowed_subs = RULES[binary]
+        if allowed_subs is None:
+            return True
+        if len(tokens) > 1 and tokens[1] in allowed_subs:
+            return True
+        if binary == "npm" and len(tokens) > 2 and tokens[1] == "run" and tokens[2] in {"build", "test"}:
+            return True
+    return False
 
 
 def main():
     data = json.load(sys.stdin)
     command = data.get("tool_input", {}).get("command", "") or ""
 
-    if not any(marker in command for marker in NOISY_MARKERS):
+    if not is_noisy(command):
         print("{}")
         return
 
