@@ -1,7 +1,6 @@
 #nullable disable
 using System.Drawing;
 using System.Windows.Forms;
-using ServisnaKniha.Models;
 
 namespace ServisnaKniha.Forms;
 
@@ -68,7 +67,6 @@ partial class NakladDialog
         // cboKategoria
         cboKategoria.Dock = DockStyle.Fill;
         cboKategoria.DropDownStyle = ComboBoxStyle.DropDownList;
-        cboKategoria.Items.AddRange(KategoriaNakladu.Kategorie);
 
         // txtPopis
         txtPopis.Dock = DockStyle.Fill;

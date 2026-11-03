@@ -1,7 +1,6 @@
 #nullable disable
 using System.Drawing;
 using System.Windows.Forms;
-using ServisnaKniha.Models;
 
 namespace ServisnaKniha.Forms;
 
@@ -115,14 +114,12 @@ partial class OlejDialog
         cboZnacka.DropDownStyle = ComboBoxStyle.DropDown;
         cboZnacka.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         cboZnacka.AutoCompleteSource = AutoCompleteSource.ListItems;
-        cboZnacka.Items.AddRange(OlejData.Znacky);
 
         // cboViskozita
         cboViskozita.Dock = DockStyle.Fill;
         cboViskozita.DropDownStyle = ComboBoxStyle.DropDown;
         cboViskozita.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         cboViskozita.AutoCompleteSource = AutoCompleteSource.ListItems;
-        cboViskozita.Items.AddRange(OlejData.Viskozity);
 
         // numObjem
         numObjem.Dock = DockStyle.Fill;
@@ -137,7 +134,6 @@ partial class OlejDialog
         cboFilter.DropDownStyle = ComboBoxStyle.DropDown;
         cboFilter.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         cboFilter.AutoCompleteSource = AutoCompleteSource.ListItems;
-        cboFilter.Items.AddRange(OlejData.Filtre);
 
         // numCenaOleja
         numCenaOleja.Dock = DockStyle.Fill;

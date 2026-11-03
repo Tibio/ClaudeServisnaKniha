@@ -1,7 +1,6 @@
 #nullable disable
 using System.Drawing;
 using System.Windows.Forms;
-using ServisnaKniha.Models;
 
 namespace ServisnaKniha.Forms;
 
@@ -84,7 +83,6 @@ partial class ServisnyZaznamDialog
         // cboTyp
         cboTyp.Dock = DockStyle.Fill;
         cboTyp.DropDownStyle = ComboBoxStyle.DropDownList;
-        cboTyp.Items.AddRange(TypServisu.Typy);
 
         // txtPopis
         txtPopis.Dock = DockStyle.Fill;

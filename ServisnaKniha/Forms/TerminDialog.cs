@@ -47,17 +47,17 @@ public partial class TerminDialog : Form
         if (_termin.KMTerminu.HasValue)
         {
             chkKM.Checked = true;
-            numKM.Value = _termin.KMTerminu.Value;
+            numKM.NastavHodnotu(_termin.KMTerminu.Value);
         }
         if (_termin.OpakovanieDni.HasValue)
         {
             chkOpakDni.Checked = true;
-            numOpakDni.Value = _termin.OpakovanieDni.Value;
+            numOpakDni.NastavHodnotu(_termin.OpakovanieDni.Value);
         }
         if (_termin.OpakovaniKM.HasValue)
         {
             chkOpakKM.Checked = true;
-            numOpakKM.Value = _termin.OpakovaniKM.Value;
+            numOpakKM.NastavHodnotu(_termin.OpakovaniKM.Value);
         }
         chkAktivny.Checked = _termin.JeAktivny;
         txtPoznamka.Text = _termin.Poznamka;

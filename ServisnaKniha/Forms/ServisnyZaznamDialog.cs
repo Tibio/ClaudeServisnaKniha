@@ -19,6 +19,7 @@ public partial class ServisnyZaznamDialog : Form
         InitializeComponent();
         Text = _jeNovy ? "Nový servisný záznam" : "Upraviť servisný záznam";
         foreach (var a in _auta) cboAuto.Items.Add(a);
+        cboTyp.Items.AddRange(TypServisu.Typy);
         NaplnFormular();
     }
 
@@ -37,15 +38,15 @@ public partial class ServisnyZaznamDialog : Form
         dtpDatum.Value = _zaznam.DatumServisu == DateTime.MinValue ? DateTime.Today : _zaznam.DatumServisu;
 
         var selectedAuto = cboAuto.SelectedItem as Auto;
-        numKM.Value = _zaznam.StavKM > 0 ? _zaznam.StavKM : (selectedAuto?.AktualneKM ?? 0);
+        numKM.NastavHodnotu(_zaznam.StavKM > 0 ? _zaznam.StavKM : (selectedAuto?.AktualneKM ?? 0));
 
         cboTyp.SelectedItem = string.IsNullOrEmpty(_zaznam.TypServisu) ? TypServisu.Typy[0] : _zaznam.TypServisu;
         if (cboTyp.SelectedIndex < 0) cboTyp.SelectedIndex = 0;
 
         txtPopis.Text = _zaznam.Popis;
         txtServis.Text = _zaznam.Servis;
-        numCenaPrace.Value = _zaznam.CenaPrace;
-        numCenaDielov.Value = _zaznam.CenaDielov;
+        numCenaPrace.NastavHodnotu(_zaznam.CenaPrace);
+        numCenaDielov.NastavHodnotu(_zaznam.CenaDielov);
         txtPoznamka.Text = _zaznam.Poznamka;
         AktualizujCelkovu();
     }

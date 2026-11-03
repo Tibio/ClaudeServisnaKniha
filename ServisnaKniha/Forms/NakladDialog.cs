@@ -19,6 +19,7 @@ public partial class NakladDialog : Form
         InitializeComponent();
         Text = _jeNovy ? "Pridať náklad" : "Upraviť náklad";
         foreach (var a in _auta) cboAuto.Items.Add(a);
+        cboKategoria.Items.AddRange(KategoriaNakladu.Kategorie);
         NaplnFormular();
     }
 
@@ -35,7 +36,7 @@ public partial class NakladDialog : Form
         cboKategoria.SelectedItem = string.IsNullOrEmpty(_naklad.Kategoria) ? KategoriaNakladu.Kategorie[0] : _naklad.Kategoria;
         if (cboKategoria.SelectedIndex < 0) cboKategoria.SelectedIndex = 0;
         txtPopis.Text = _naklad.Popis;
-        numSuma.Value = _naklad.Suma;
+        numSuma.NastavHodnotu(_naklad.Suma);
         txtDoklad.Text = _naklad.Doklad;
         txtPoznamka.Text = _naklad.Poznamka;
     }

@@ -15,6 +15,9 @@ public partial class AutoDialog : Form
         _auto = auto ?? new Auto { DatumSTK = DateTime.Today.AddYear(1), DatumEK = DateTime.Today.AddYear(2) };
         InitializeComponent();
         Text = _jeNovy ? "Pridať vozidlo" : "Upraviť vozidlo";
+        numRok.Maximum = DateTime.Now.Year + 1;
+        cboZnacka.Items.AddRange(ZnackyAut.Zoznam);
+        cboTypMotora.Items.AddRange(new object[] { "Benzín", "Diesel", "LPG", "CNG", "Hybrid", "Elektrický", "Iné" });
         NaplnFormular();
     }
 
@@ -23,14 +26,14 @@ public partial class AutoDialog : Form
         txtSPZ.Text = _auto.SPZ;
         cboZnacka.Text = _auto.Znacka;
         txtModel.Text = _auto.Model;
-        numRok.Value = _auto.RokVyroby == 0 ? DateTime.Now.Year : _auto.RokVyroby;
+        numRok.NastavHodnotu(_auto.RokVyroby == 0 ? DateTime.Now.Year : _auto.RokVyroby);
         txtVIN.Text = _auto.VIN;
         cboTypMotora.SelectedItem = string.IsNullOrEmpty(_auto.TypMotora) ? "Benzín" : _auto.TypMotora;
         if (cboTypMotora.SelectedIndex < 0) cboTypMotora.SelectedIndex = 0;
-        numObjem.Value = (decimal)Math.Min(_auto.ObjemMotora, 10);
-        numVykon.Value = _auto.VykonKW;
+        numObjem.NastavHodnotu((decimal)Math.Min(_auto.ObjemMotora, 10));
+        numVykon.NastavHodnotu(_auto.VykonKW);
         txtFarba.Text = _auto.Farba;
-        numKM.Value = _auto.AktualneKM;
+        numKM.NastavHodnotu(_auto.AktualneKM);
         dtpSTK.Value = _auto.DatumSTK == DateTime.MinValue ? DateTime.Today.AddYears(1) : _auto.DatumSTK;
         dtpEK.Value = _auto.DatumEK == DateTime.MinValue ? DateTime.Today.AddYears(2) : _auto.DatumEK;
         txtPoznamka.Text = _auto.Poznamka;

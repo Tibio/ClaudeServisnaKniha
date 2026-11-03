@@ -26,12 +26,12 @@ public partial class OlejNastaveniaDialog : Form
         if (_nastavenia.IntervalKM.HasValue)
         {
             chkKM.Checked = true;
-            numKM.Value = _nastavenia.IntervalKM.Value;
+            numKM.NastavHodnotu(_nastavenia.IntervalKM.Value);
         }
         if (_nastavenia.IntervalMesiace.HasValue)
         {
             chkMesiace.Checked = true;
-            numMesiace.Value = _nastavenia.IntervalMesiace.Value;
+            numMesiace.NastavHodnotu(_nastavenia.IntervalMesiace.Value);
         }
     }
 

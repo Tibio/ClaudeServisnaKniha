@@ -1,7 +1,6 @@
 #nullable disable
 using System.Drawing;
 using System.Windows.Forms;
-using ServisnaKniha.Models;
 
 namespace ServisnaKniha.Forms;
 
@@ -84,7 +83,6 @@ partial class AutoDialog
         cboZnacka.DropDownStyle = ComboBoxStyle.DropDown;
         cboZnacka.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         cboZnacka.AutoCompleteSource = AutoCompleteSource.ListItems;
-        cboZnacka.Items.AddRange(ZnackyAut.Zoznam);
 
         // txtModel
         txtModel.Dock = DockStyle.Fill;
@@ -92,8 +90,8 @@ partial class AutoDialog
         // numRok
         numRok.Dock = DockStyle.Fill;
         numRok.Minimum = 1900;
-        numRok.Maximum = DateTime.Now.Year;
-        numRok.Value = DateTime.Now.Year;
+        numRok.Maximum = 2100;
+        numRok.Value = 2000;
         numRok.ThousandsSeparator = false;
 
         // txtVIN
@@ -102,7 +100,6 @@ partial class AutoDialog
         // cboTypMotora
         cboTypMotora.Dock = DockStyle.Fill;
         cboTypMotora.DropDownStyle = ComboBoxStyle.DropDownList;
-        cboTypMotora.Items.AddRange(new object[] { "Benzín", "Diesel", "LPG", "CNG", "Hybrid", "Elektrický", "Iné" });
 
         // numObjem
         numObjem.Dock = DockStyle.Fill;

@@ -5,6 +5,8 @@ using System.Windows.Forms;
 
 namespace ServisnaKniha.Forms;
 
+// Formulár je písaný kódom (bez Designer.cs) — VS ho otvorí priamo ako kód.
+[System.ComponentModel.DesignerCategory("Code")]
 public partial class KMSledovaniePanel : UserControl
 {
     private readonly DatabaseManager _db;
@@ -149,7 +151,7 @@ public partial class KMSledovaniePanel : UserControl
         }
 
         lblAktualneKM.Text = $"Aktuálne: {_aktualneAuto.AktualneKM:N0} km";
-        numKM.Value = _aktualneAuto.AktualneKM;
+        numKM.NastavHodnotu(_aktualneAuto.AktualneKM);
 
         var zaznamy = _db.GetKMZaznamy(_aktualneAuto.Id);
         int? predchKM = null;

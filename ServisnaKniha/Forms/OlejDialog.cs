@@ -19,6 +19,9 @@ public partial class OlejDialog : Form
         InitializeComponent();
         Text = _jeNovy ? "Nová výmena oleja" : "Upraviť výmenu oleja";
         foreach (var a in _auta) cboAuto.Items.Add(a);
+        cboZnacka.Items.AddRange(OlejData.Znacky);
+        cboViskozita.Items.AddRange(OlejData.Viskozity);
+        cboFilter.Items.AddRange(OlejData.Filtre);
         NaplnFormular();
     }
 
@@ -37,14 +40,14 @@ public partial class OlejDialog : Form
         dtpDatum.Value = _zaznam.DatumVymeny == DateTime.MinValue ? DateTime.Today : _zaznam.DatumVymeny;
 
         var auto2 = cboAuto.SelectedItem as Auto;
-        numKM.Value = _zaznam.StavKM > 0 ? _zaznam.StavKM : (auto2?.AktualneKM ?? 0);
+        numKM.NastavHodnotu(_zaznam.StavKM > 0 ? _zaznam.StavKM : (auto2?.AktualneKM ?? 0));
 
         cboZnacka.Text = _zaznam.ZnackaOleja;
         cboViskozita.Text = _zaznam.ViskozitaOleja;
-        numObjem.Value = _zaznam.ObjemOleja > 0 ? (decimal)_zaznam.ObjemOleja : 5;
+        numObjem.NastavHodnotu(_zaznam.ObjemOleja > 0 ? (decimal)_zaznam.ObjemOleja : 5);
         cboFilter.Text = _zaznam.FilterOleja;
-        numCenaOleja.Value = _zaznam.CenaOleja;
-        numCenaVymeny.Value = _zaznam.CenaVymeny;
+        numCenaOleja.NastavHodnotu(_zaznam.CenaOleja);
+        numCenaVymeny.NastavHodnotu(_zaznam.CenaVymeny);
         txtServis.Text = _zaznam.Servis;
         txtPoznamka.Text = _zaznam.Poznamka;
         AktualizujCelkovu();

@@ -19,6 +19,7 @@ public partial class OEMDielDialog : Form
         InitializeComponent();
         Text = _jeNovy ? "Pridať OEM diel" : "Upraviť OEM diel";
         foreach (var a in _auta) cboAuto.Items.Add(a);
+        cboKategoria.Items.AddRange(KategoriaDielu.Kategorie);
         NaplnFormular();
     }
 
@@ -41,10 +42,10 @@ public partial class OEMDielDialog : Form
         cboKategoria.SelectedItem = string.IsNullOrEmpty(_diel.Kategoria) ? KategoriaDielu.Kategorie[0] : _diel.Kategoria;
         if (cboKategoria.SelectedIndex < 0) cboKategoria.SelectedIndex = 0;
 
-        numPocet.Value = _diel.Pocet;
-        numCena.Value = _diel.CenaKus;
+        numPocet.NastavHodnotu(_diel.Pocet);
+        numCena.NastavHodnotu(_diel.CenaKus);
         dtpDatum.Value = _diel.DatumMontaze == DateTime.MinValue ? DateTime.Today : _diel.DatumMontaze;
-        numKM.Value = _diel.KMPriMontazi;
+        numKM.NastavHodnotu(_diel.KMPriMontazi);
         txtPoznamka.Text = _diel.Poznamka;
         AktualizujCelkovu();
     }

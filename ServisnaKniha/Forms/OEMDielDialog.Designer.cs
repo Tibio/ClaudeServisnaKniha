@@ -1,7 +1,6 @@
 #nullable disable
 using System.Drawing;
 using System.Windows.Forms;
-using ServisnaKniha.Models;
 
 namespace ServisnaKniha.Forms;
 
@@ -85,7 +84,6 @@ partial class OEMDielDialog
         // cboKategoria
         cboKategoria.Dock = DockStyle.Fill;
         cboKategoria.DropDownStyle = ComboBoxStyle.DropDownList;
-        cboKategoria.Items.AddRange(KategoriaDielu.Kategorie);
 
         // numPocet
         numPocet.Dock = DockStyle.Fill;

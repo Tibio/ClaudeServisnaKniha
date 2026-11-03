@@ -5,6 +5,8 @@ using System.Windows.Forms;
 
 namespace ServisnaKniha.Forms;
 
+// Formulár je písaný kódom (bez Designer.cs) — VS ho otvorí priamo ako kód.
+[System.ComponentModel.DesignerCategory("Code")]
 public partial class HlavnyFormular : Form
 {
     private readonly DatabaseManager _db;
